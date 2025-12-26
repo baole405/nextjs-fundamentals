@@ -1,6 +1,52 @@
-import Link from 'next/link'
+'use client'
+
+import { ActionResponse, signIn } from '@/app/actions/auth'
+import Button from '@/app/components/ui/Button'
+import {
+  Form,
+  FormError,
+  FormGroup,
+  FormInput,
+  FormLabel,
+} from '@/app/components/ui/Form'
+import { useRouter } from 'next/navigation'
+import { useActionState } from 'react'
+import toast from 'react-hot-toast'
+
+const initialState: ActionResponse = {
+  success: false,
+  message: '',
+  errors: undefined,
+}
 
 export default function SignInPage() {
+  const router = useRouter()
+
+  // Use useActionState hook for the form submission action
+  const [state, formAction, isPending] = useActionState<
+    ActionResponse,
+    FormData
+  >(async (prevState: ActionResponse, formData: FormData) => {
+    try {
+      const result = await signIn(formData)
+
+      // Handle successful submission
+      if (result.success) {
+        toast.success('Signed in successfully')
+        router.push('/dashboard')
+        router.refresh()
+      }
+
+      return result
+    } catch (err) {
+      return {
+        success: false,
+        message: (err as Error).message || 'An error occurred',
+        errors: undefined,
+      }
+    }
+  }, initialState)
+
   return (
     //... rest of the component
     <Form action={formAction} className="space-y-6">

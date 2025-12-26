@@ -2,11 +2,10 @@
 
 import { db } from '@/db'
 import { issues } from '@/db/schema'
-import { eq } from 'drizzle-orm'
 import { getCurrentUser } from '@/lib/dal'
+import { eq } from 'drizzle-orm'
 import { z } from 'zod'
-import { mockDelay } from '@/lib/utils'
-import { revalidateTag } from 'next/cache'
+
 // Define Zod schema for issue validation
 const IssueSchema = z.object({
   title: z
@@ -33,4 +32,95 @@ export type ActionResponse = {
   message: string
   errors?: Record<string, string[]>
   error?: string
+}
+
+export async function createIssue(data: IssueData): Promise<ActionResponse> {
+  try {
+    // Security check - ensure user is authenticated
+    const user = await getCurrentUser()
+    if (!user) {
+      return {
+        success: false,
+        message: 'Unauthorized access',
+        error: 'Unauthorized',
+      }
+    }
+
+    // Validate with Zod
+    const validationResult = IssueSchema.safeParse(data)
+    if (!validationResult.success) {
+      return {
+        success: false,
+        message: 'Validation failed',
+        errors: validationResult.error.flatten().fieldErrors,
+      }
+    }
+
+    // Create issue with validated data
+    const validatedData = validationResult.data
+    await db.insert(issues).values({
+      title: validatedData.title,
+      description: validatedData.description || null,
+      status: validatedData.status,
+      priority: validatedData.priority,
+      userId: validatedData.userId,
+    })
+
+    return { success: true, message: 'Issue created successfully' }
+  } catch (error) {
+    console.error('Error creating issue:', error)
+    return {
+      success: false,
+      message: 'An error occurred while creating the issue',
+      error: 'Failed to create issue',
+    }
+  }
+}
+
+export async function updateIssue(
+  issueId: number,
+  data: IssueData
+): Promise<ActionResponse> {
+  try {
+    // Security check - ensure user is authenticated
+    const user = await getCurrentUser()
+    if (!user) {
+      return {
+        success: false,
+        message: 'Unauthorized access',
+        error: 'Unauthorized',
+      }
+    }
+
+    // Validate with Zod
+    const validationResult = IssueSchema.safeParse(data)
+    if (!validationResult.success) {
+      return {
+        success: false,
+        message: 'Validation failed',
+        errors: validationResult.error.flatten().fieldErrors,
+      }
+    }
+
+    // Update issue with validated data
+    const validatedData = validationResult.data
+    await db
+      .update(issues)
+      .set({
+        title: validatedData.title,
+        description: validatedData.description || null,
+        status: validatedData.status,
+        priority: validatedData.priority,
+      })
+      .where(eq(issues.id, issueId))
+
+    return { success: true, message: 'Issue updated successfully' }
+  } catch (error) {
+    console.error('Error updating issue:', error)
+    return {
+      success: false,
+      message: 'An error occurred while updating the issue',
+      error: 'Failed to update issue',
+    }
+  }
 }

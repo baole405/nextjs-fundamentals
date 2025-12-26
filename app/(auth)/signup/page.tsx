@@ -1,18 +1,17 @@
 'use client'
 
-import { useActionState } from 'react'
-import { useRouter } from 'next/navigation'
+import { ActionResponse, signUp } from '@/app/actions/auth'
 import Button from '@/app/components/ui/Button'
 import {
   Form,
-  FormGroup,
-  FormLabel,
-  FormInput,
   FormError,
+  FormGroup,
+  FormInput,
+  FormLabel,
 } from '@/app/components/ui/Form'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useActionState } from 'react'
 import toast from 'react-hot-toast'
-import { signUp, ActionResponse } from '@/app/actions/auth'
 
 const initialState: ActionResponse = {
   success: false,
