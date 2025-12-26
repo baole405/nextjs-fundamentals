@@ -1,6 +1,5 @@
-import React from 'react'
-import Link from 'next/link'
 import { CheckCircle2, XCircle } from 'lucide-react'
+import Link from 'next/link'
 
 export default function PricingPage() {
   return (
