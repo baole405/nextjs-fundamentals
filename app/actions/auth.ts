@@ -1,15 +1,15 @@
 'use server'
 
-import { z } from 'zod'
 import {
-  verifyPassword,
   createSession,
   createUser,
   deleteSession,
+  verifyPassword,
 } from '@/lib/auth'
 import { getUserByEmail } from '@/lib/dal'
 import { mockDelay } from '@/lib/utils'
 import { redirect } from 'next/navigation'
+import { z } from 'zod'
 
 // Define Zod schema for signin validation
 const SignInSchema = z.object({
