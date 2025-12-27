@@ -1,9 +1,9 @@
 import { db } from '@/db'
 import { users } from '@/db/schema'
 import { eq } from 'drizzle-orm'
-import { unstable_cacheTag as cacheTag } from 'next/cache'
-import { getSession } from './auth'
+import { unstable_cache } from 'next/cache'
 import { cache } from 'react'
+import { getSession } from './auth'
 
 // Current user
 export const getCurrentUser = cache(async () => {
@@ -34,19 +34,24 @@ export const getUserByEmail = async (email: string) => {
   }
 }
 
-export async function getIssues() {
-  'use cache'
-  cacheTag('issues')
-  try {
-    const result = await db.query.issues.findMany({
-      with: {
-        user: true,
-      },
-      orderBy: (issues, { desc }) => [desc(issues.createdAt)],
-    })
-    return result
-  } catch (error) {
-    console.error('Error fetching issues:', error)
-    throw new Error('Failed to fetch issues')
+export const getIssues = unstable_cache(
+  async () => {
+    try {
+      const result = await db.query.issues.findMany({
+        with: {
+          user: true,
+        },
+        orderBy: (issues, { desc }) => [desc(issues.createdAt)],
+      })
+      return result
+    } catch (error) {
+      console.error('Error fetching issues:', error)
+      throw new Error('Failed to fetch issues')
+    }
+  },
+  ['issues'],
+  {
+    tags: ['issues'],
+    revalidate: 60, // Cache for 60 seconds
   }
-}
+)
