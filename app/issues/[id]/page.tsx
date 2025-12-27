@@ -1,20 +1,17 @@
-import { getIssue } from '@/lib/dal'
-import { formatRelativeTime } from '@/lib/utils'
-import { Priority, Status } from '@/lib/types'
-import Link from 'next/link'
-import { notFound } from 'next/navigation'
 import Badge from '@/app/components/ui/Badge'
 import Button from '@/app/components/ui/Button'
+import { getIssues } from '@/lib/dal'
+import { Priority, Status } from '@/lib/types'
+import { formatRelativeTime } from '@/lib/utils'
 import { ArrowLeftIcon, Edit2Icon } from 'lucide-react'
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 import DeleteIssueButton from '../../components/DeleteIssueButton'
 
-export default async function IssuePage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
-  const { id } = await params
-  const issue = await getIssue(parseInt(id))
+async function IssueContent({ id }: { id: string }) {
+  const issues = await getIssues()
+  const issue = issues.find((issue) => issue.id === parseInt(id))
 
   if (!issue) {
     notFound()
@@ -128,5 +125,19 @@ export default async function IssuePage({
         </div>
       </div>
     </div>
+  )
+}
+
+export default async function IssuePage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
+
+  return (
+    <Suspense fallback={<div className="p-8">Loading issue...</div>}>
+      <IssueContent id={id} />
+    </Suspense>
   )
 }

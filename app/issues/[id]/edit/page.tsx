@@ -1,16 +1,13 @@
 import IssueForm from '@/app/components/IssueForm'
-import { getIssue } from '@/lib/dal'
+import { getIssues } from '@/lib/dal'
 import { ArrowLeftIcon } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-export default async function EditIssuePage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
-  const { id } = await params
+import { Suspense } from 'react'
 
-  const issue = await getIssue(parseInt(id))
+async function EditIssueContent({ id }: { id: string }) {
+  const issues = await getIssues()
+  const issue = issues.find((issue) => issue.id === parseInt(id))
 
   if (!issue) {
     notFound()
@@ -32,5 +29,19 @@ export default async function EditIssuePage({
         <IssueForm userId={issue.userId} issue={issue} isEditing />
       </div>
     </div>
+  )
+}
+
+export default async function EditIssuePage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
+
+  return (
+    <Suspense fallback={<div className="p-8">Loading...</div>}>
+      <EditIssueContent id={id} />
+    </Suspense>
   )
 }
