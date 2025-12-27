@@ -5,6 +5,7 @@ import { issues } from '@/db/schema'
 import { getCurrentUser } from '@/lib/dal'
 import { mockDelay } from '@/lib/utils'
 import { eq } from 'drizzle-orm'
+import { revalidateTag } from 'next/cache'
 import { z } from 'zod'
 
 // Define Zod schema for issue validation
@@ -66,7 +67,7 @@ export async function createIssue(data: IssueData): Promise<ActionResponse> {
       priority: validatedData.priority,
       userId: validatedData.userId,
     })
-
+    revalidateTag('issues')
     return { success: true, message: 'Issue created successfully' }
   } catch (error) {
     console.error('Error creating issue:', error)
