@@ -9,6 +9,8 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import DeleteIssueButton from '../../components/DeleteIssueButton'
 
+export const dynamic = 'force-dynamic'
+
 async function IssueContent({ id }: { id: string }) {
   const issues = await getIssues()
   const issue = issues.find((issue) => issue.id === parseInt(id))

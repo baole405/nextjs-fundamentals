@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
+export const dynamic = 'force-dynamic'
+
 async function EditIssueContent({ id }: { id: string }) {
   const issues = await getIssues()
   const issue = issues.find((issue) => issue.id === parseInt(id))
